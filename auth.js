@@ -1,6 +1,6 @@
 const { verify } = require('jsonwebtoken');
 
-export const auth = (req, res, next) => {
+const auth = (req, res, next) => {
     try {
         const jwtToken = req.body.token || req.query.token || req.headers['x-access-token'];
         req.user = verify(jwtToken, process.env.JWTSECRETKEY);
@@ -11,3 +11,5 @@ export const auth = (req, res, next) => {
         res.status(401).send({ status: 'error', message: 'authentication failed' });
     }
 };
+
+module.exports = { auth };
