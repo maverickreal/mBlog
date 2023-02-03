@@ -1,0 +1,25 @@
+{
+  "name": "mblog",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "JWTSECRETKEY=12345 PORT=8080 DBNAME=blogdb DBHOST=127.0.0.1 DBPORT=27017 nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maverickreal/mBlog.git"
+  },
+  "author": "maverick",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/maverickreal/mBlog/issues"
+  },
+  "homepage": "https://github.com/maverickreal/mBlog#readme",
+  "dependencies": {
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.0",
+    "mongodb": "^5.0.0",
+    "uuid": "^9.0.0"
+  }
+}
