@@ -13,6 +13,8 @@ app.post('/api/blog', auth, router.createBlog);
 
 app.delete('/api/blog/:blogId', auth, router.deleteBlog);
 
+app.put('/api/blog/:blogId', auth, router.updateBlog);
+
 app.get('/api/blog/:blogId', auth, router.getBlog);
 
 app.get('/api/blogs', auth, router.getUserBlogs);

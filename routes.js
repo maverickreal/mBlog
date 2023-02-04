@@ -28,7 +28,9 @@ const signUp = async (req, res) => {
                 status: 'error', message: error
             });
         }
-        const jwtToken = sign(user, process.env.JWTSECRETKEY);
+        const jwtToken = sign(user,
+            process.env.JWTSECRETKEY,
+            { expiresIn: '7d' });
         user.token = jwtToken;
         res.status(200).send({
             status: 'ok', message: user
@@ -36,9 +38,7 @@ const signUp = async (req, res) => {
     }
     catch (error) {
         console.log(error);
-        res.status(500).send({
-            status: 'error', message: error
-        });
+        res.status(500).send({ status: 'error' });
     }
 };
 
@@ -67,10 +67,7 @@ const signIn = async (req, res) => {
     }
     catch (error) {
         console.log(error);
-        res.status(500).send({
-            status: 'error',
-            message: error
-        });
+        res.status(500).send({ status: 'error' });
     }
 };
 
@@ -92,10 +89,7 @@ const getUser = async (req, res) => {
     }
     catch (error) {
         console.log(error);
-        res.status(500).send({
-            status: 'error',
-            message: error
-        });
+        res.status(500).send({ status: 'error' });
     }
 };
 
@@ -123,10 +117,7 @@ const createBlog = async (req, res) => {
     }
     catch (error) {
         console.log(error);
-        res.status(500).send({
-            status: 'error',
-            message: error
-        });
+        res.status(500).send({ status: 'error' });
     }
 };
 
@@ -146,6 +137,38 @@ const deleteBlog = async (req, res) => {
     }
 };
 
+const updateBlog = async (req, res) => {
+    try{
+        const data = {
+            title: req.body.title,
+            description: req.body.content
+        };
+        if (!data.title && !data.description) {
+            return res.status(400).send({
+                status: 'error',
+                message: 'no update provided'
+            });
+        }
+        let {error, blog} = await db.updateBlog(req.user.userId, req.params['blogId'], data);
+        if(error){
+            res.status(404).send({
+                status: 'error',
+                message: error
+            });
+        }
+        else{
+            res.status(200).send({
+                status: 'ok',
+                message: blog
+            });
+        }
+    }
+    catch(error){
+        console.log(error);
+        res.status(500).send({status: 'error'});
+    }
+}
+
 const getBlog = async (req, res) => {
     try {
         let { error, blog } = await db.getBlog(req.params['blogId']);
@@ -164,10 +187,7 @@ const getBlog = async (req, res) => {
     }
     catch (error) {
         console.log(error);
-        res.status(500).send({
-            status: 'error',
-            message: error
-        });
+        res.status(500).send({ status: 'error' });
     }
 };
 
@@ -189,11 +209,10 @@ const getUserBlogs = async (req, res) => {
     }
     catch (error) {
         console.log(error);
-        res.status(500).send({
-            status: 'error',
-            message: error
-        });
+        res.status(500).send({ status: 'error' });
     }
 };
 
-module.exports = { signIn, signUp, getUser, createBlog, deleteBlog, getBlog, getUserBlogs };
+module.exports = { signIn, signUp, getUser,
+                   createBlog, deleteBlog, getBlog,
+                   getUserBlogs, updateBlog };

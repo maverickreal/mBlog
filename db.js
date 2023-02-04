@@ -10,7 +10,7 @@ const init = async (flush=false) => {
     await client.connect();
     db = client.db(process.env.DBNAME);
     if(flush){
-      truncate();
+      await truncate();
     }
     return true;
   } catch (error) {
@@ -119,6 +119,28 @@ const deleteBlog = async (userId, blogId) => {
   return true;
 }
 
+const updateBlog = async ( userId, blogId, data ) => {
+  try{
+    const blogs = db.collection('blogs');
+    if(!data.title){
+      delete data.title;
+    }
+    if(!data.desc){
+      delete data.desc;
+    }
+    const res = await blogs.updateOne({ blogId, userId }, {$set: data});
+    if(res.matchedCount!==1){
+      return { error:'blog not found' };
+    }
+    else{
+      return { blogId, ...data };
+    }
+  }
+  catch(error){
+    return { error };
+  }
+}
+
 const getBlog = async blogId => {
   let returnValue = {};
   try {
@@ -176,5 +198,6 @@ const truncate = async () => {
 
 module.exports={ init, verifyCredentials, userExists,
                  createBlog, createUser, deleteBlog,
-                 getBlog, getBlogsOfUser, getUserProfile
+                 getBlog, getBlogsOfUser, getUserProfile,
+                 updateBlog
                };
