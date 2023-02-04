@@ -1,7 +1,7 @@
 const express = require('express'), { auth } = require('./auth.js'),
       router = require('./routes.js'), app = express();
 
-app.use(express.json()), require('./db.js').init(); // connect to the database
+app.use(express.json()), require('./db.js').init(process.env.ENV==='test'); // connect to the database
 
 app.post('/signup', router.signUp);
 
@@ -17,7 +17,7 @@ app.get('/api/blog/:blogId', auth, router.getBlog);
 
 app.get('/api/blogs', auth, router.getUserBlogs);
 
-if (process.env.ENV == 'test') {
+if (process.env.ENV === 'test') {
     module.exports = app;
 }
 else {

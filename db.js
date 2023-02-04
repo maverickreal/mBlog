@@ -5,12 +5,17 @@ const uri = `mongodb://${process.env.DBHOST}:${process.env.DBPORT}/${process.env
 let client = new MongoClient(uri, { useNewUrlParser: true }),
     db = null;
 
-const init = async () => {
+const init = async (flush=false) => {
   try {
     await client.connect();
     db = client.db(process.env.DBNAME);
+    if(flush){
+      truncate();
+    }
+    return true;
   } catch (error) {
     console.log(error);
+    return false;
   }
 };
 
@@ -18,7 +23,7 @@ const verifyCredentials = async (email, password) => {
   let returnValue = false;
   try {
     const users = db.collection('users');
-    const user = await users.findOne({ email, password });
+    const user = await users.findOne({ $or: [ {email}, {password} ] });
     if (user) {
       returnValue = true;
     }
@@ -117,12 +122,14 @@ const deleteBlog = async (userId, blogId) => {
 const getBlog = async blogId => {
   let returnValue = {};
   try {
-    const res = await db.collection('blogs').findOne({ blogId });
-    if (!res) {
+    const blogs = db.collection('blogs');
+    const blog = await blogs.findOne({ blogId }, {projection: {userId: 0}});
+    if (!blog) {
       returnValue = { error: 'blog not found' };
     }
     else {
-      returnValue.blog = { blogId, ...res };
+      delete blog._id;
+      returnValue = { blog };
     }
   }
   catch (error) {
@@ -140,7 +147,7 @@ const getBlogsOfUser = async userId => {
       returnValue = { error: 'user could not be found' };
     }
     else {
-      const blogsList = blogs.find({ userId }, {projection:{title: 1, description: 1, blogId: 1}});
+      const blogsList = blogs.find({ userId }, {projection:{title: 1, description: 1, blogId: 1, createdAt: 1}});
       returnValue = { blogs: [] };
       for await ( const blog of blogsList){
         delete blog._id;
@@ -155,6 +162,19 @@ const getBlogsOfUser = async userId => {
   return returnValue;
 }
 
+const truncate = async () => {
+  try{
+    await db.collection('users').drop();
+    await db.collection('blogs').drop();
+    return true;
+  }
+  catch(error){
+    console.log(error);
+    return false;
+  }
+}
+
 module.exports={ init, verifyCredentials, userExists,
                  createBlog, createUser, deleteBlog,
-                 getBlog, getBlogsOfUser, getUserProfile };
+                 getBlog, getBlogsOfUser, getUserProfile
+               };

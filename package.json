@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "JWTSECRETKEY=12345 PORT=8080 DBNAME=blogdb DBHOST=127.0.0.1 DBPORT=27017 nodemon index.js"
+    "dev": "clear ; JWTSECRETKEY=12345 PORT=8080 DBNAME=blogdb DBHOST=127.0.0.1 DBPORT=27017 nodemon index.js",
+    "test": "clear ; ENV=test JWTSECRETKEY=12345 DBNAME=blogdb DBHOST=127.0.0.1 DBPORT=27017 jest main.test.js --detectOpenHandles"
   },
   "repository": {
     "type": "git",
