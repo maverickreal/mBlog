@@ -7,7 +7,7 @@ app.post('/signup', router.signUp);
 
 app.post('/login', router.signIn);
 
-//app.post('/logout', auth, router.logOut);
+app.post('/logout', auth, router.logOut);
 
 app.get('/api/user', auth, router.getUser);
 

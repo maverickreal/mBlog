@@ -2,8 +2,10 @@ const MongoClient = require('mongodb').MongoClient;
 
 const uri = `mongodb://${process.env.DBHOST}:${process.env.DBPORT}/${process.env.DBNAME}`;
 
-let client = new MongoClient(uri, { useNewUrlParser: true }),
-    db = null;
+let client = new MongoClient(
+  uri,
+  { useNewUrlParser: true }
+  ), db = null;
 
 const init = async (flush=false) => {
   try {
@@ -12,10 +14,8 @@ const init = async (flush=false) => {
     if(flush){
       await truncate();
     }
-    return true;
   } catch (error) {
     console.log(error);
-    return false;
   }
 };
 
@@ -188,11 +188,9 @@ const truncate = async () => {
   try{
     await db.collection('users').drop();
     await db.collection('blogs').drop();
-    return true;
   }
   catch(error){
     console.log(error);
-    return false;
   }
 }
 

@@ -1,12 +1,32 @@
-const { verify } = require('jsonwebtoken');
+const { verify, sign } = require('jsonwebtoken');
 
+let uidToJwt = {};
 const emailPattern = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
+const assignToken = user => {
+    const jwtToken = sign(user,
+        process.env.JWTSECRETKEY,
+        { expiresIn: '7d' }
+        );
+    user.token = jwtToken;
+    uidToJwt[user.userId] = jwtToken;
+}
+
+const invalidate = userId => {
+    delete uidToJwt[userId];
+}
 
 const auth = (req, res, next) => {
     try {
         const jwtToken = req.body.token || req.query.token || req.headers['x-access-token'];
         req.user = verify(jwtToken, process.env.JWTSECRETKEY);
-        next();
+        const realToken = uidToJwt[req.user.userId];
+        if(realToken!==jwtToken){
+            res.status(401).send({ status: 'error', message: 'authentication failed' });
+        }
+        else{
+            next();
+        }
     }
     catch (error) {
         console.log(error);
@@ -42,4 +62,8 @@ const checkPassword = password => {
 }
 
 
-module.exports = { auth, checkEmail, checkPassword };
+module.exports = {
+    assignToken, auth,
+    checkEmail, checkPassword,
+    invalidate
+};

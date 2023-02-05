@@ -1,5 +1,5 @@
 const db = require('./db.js'), { v4: uuid } = require('uuid'),
-{ sign } = require('jsonwebtoken'), {checkEmail, checkPassword} = require('./auth.js');
+{checkEmail, checkPassword, assignToken, invalidate } = require('./auth.js');
 
 const signUp = async (req, res) => {
     try {
@@ -28,19 +28,24 @@ const signUp = async (req, res) => {
                 message: 'credentials already in use'
             });
         }
-        const { error, user } = await db.createUser(uuid(), firstName + ' ' + lastName, email, password);
+        const userId = uuid();
+        const { error, user } = await db.createUser(
+            userId, firstName + ' ' + lastName,
+            email, password
+            );
         if (error) {
-            return res.status(500).send({
+            res.status(500).send({
                 status: 'error', message: error
             });
         }
-        const jwtToken = sign(user,
-            process.env.JWTSECRETKEY,
-            { expiresIn: '7d' });
-        user.token = jwtToken;
-        res.status(200).send({
-            status: 'ok', message: user
-        });
+        else{
+            assignToken(user);
+            delete user.userId;
+            res.status(200).send({
+                status: 'ok',
+                message: user
+            });
+        }
     }
     catch (error) {
         console.log(error);
@@ -64,8 +69,8 @@ const signIn = async (req, res) => {
                 message: error
             });
         }
-        const jwtToken = sign(user, process.env.JWTSECRETKEY);
-        user.token = jwtToken;
+        assignToken(user);
+        delete user.userId;
         res.status(200).send({
             status: 'ok',
             message: user
@@ -76,6 +81,13 @@ const signIn = async (req, res) => {
         res.status(500).send({ status: 'error' });
     }
 };
+
+const logOut = async (req, res)=>{
+    invalidate(req.user.userId);
+    res.status(200).send({
+        status:'ok',
+    });
+}
 
 const getUser = async (req, res) => {
     try {
@@ -221,4 +233,4 @@ const getUserBlogs = async (req, res) => {
 
 module.exports = { signIn, signUp, getUser,
                    createBlog, deleteBlog, getBlog,
-                   getUserBlogs, updateBlog };
+                   getUserBlogs, updateBlog, logOut };
